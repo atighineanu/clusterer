@@ -1,0 +1,21 @@
+{
+ "Deploy": "libvirt",
+ "StackName": "RKE",
+ "Pool": {
+  "Name": "default",
+  "Path": "/home/qcows"
+ },
+ "Node": {},
+ "SeedVol_Leap": "opensuse-seed.qcow2",
+ "SeedVol_SLES15_2": "",
+ "SeedVM_Leap": "opensuse-seed",
+ "SeedVM_SLES15_2": "",
+ "Workers": {
+  "Count": 2,
+  "Distro": ""
+ },
+ "Masters": {
+  "Count": 1,
+  "Distro": ""
+ }
+}
