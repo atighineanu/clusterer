@@ -65,7 +65,7 @@ func StartCluster() {
 	for index, _ := range cluster.Node {
 		libvirtd.StartVM(index)
 	}
-	time.Sleep(13 * time.Second)
+	time.Sleep(17 * time.Second)
 	for index, _ := range cluster.Node {
 		libvirtd.WaitForIP(*cluster, index)
 		time.Sleep(3 * time.Second)
