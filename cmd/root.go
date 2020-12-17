@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var RootDir = "/home/user/go/src/clusterer"
+var RootDir = "/home/user/scripts/github.com/atighineanu/clusterer"
 var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
