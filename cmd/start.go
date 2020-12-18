@@ -62,6 +62,7 @@ func StartCluster() {
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 	}
+	libvirtd.SanityCheck(*cluster)
 	for index, _ := range cluster.Node {
 		libvirtd.StartVM(index)
 	}
