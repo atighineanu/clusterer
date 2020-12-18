@@ -71,7 +71,7 @@ func CheckIfExists(cluster data.Command, machine string) error {
 		} else {
 			found := false
 			for _, row := range strings.Split(fmt.Sprintf("%s", string(resp)), "\n") {
-				if strings.Contains(row, "eth0") {
+				if strings.Contains(row, "eth0") && strings.Contains(row, "ipv4") {
 					//fmt.Printf("iaca IP: %s\n", strings.Split(row, " ")[len(strings.Split(row, " "))-1])
 					cluster.Node[machine] = strings.Split(strings.Split(row, " ")[len(strings.Split(row, " "))-1], "/")[0]
 					found = true
@@ -110,6 +110,7 @@ func SeeIfOffline(cluster data.Command, machine string) error {
 }
 
 func Destroy(cluster data.Command, machine string) error {
+	fmt.Printf("Destroying machine %v now...\n", machine)
 	cmdstring1 := []string{"sudo", "virsh", "destroy", machine}
 	cmdstring2 := []string{"sudo", "virsh", "undefine", machine}
 	cmdstring3 := []string{"sudo", "virsh", "vol-delete", machine, "--pool", cluster.Pool.Name}
@@ -129,5 +130,55 @@ func Destroy(cluster data.Command, machine string) error {
 		return errors.New(err)
 	}
 	delete(cluster.Node, machine)
+	return nil
+}
+
+func SanityCheck(cluster data.Command) error {
+	log.Println("Checking libvirt-based infra sanity...")
+	cmdstring := []string{"sudo", "virsh", "pool-list"}
+	command := utils.SliceExec(cmdstring)
+	out, err := utils.NiceBuffRunner(command, "/home/user")
+	if err != "" {
+		return errors.New(err)
+	}
+	for _, row := range strings.Split(out, "\n") {
+		if strings.Contains(row, cluster.Pool.Name) {
+			if !strings.Contains(row, "active") {
+				cmdstring := []string{"sudo", "virsh", "pool-start", cluster.Pool.Name}
+				command := utils.SliceExec(cmdstring)
+				_, err := utils.NiceBuffRunner(command, "/home/user")
+				if err != "" {
+					return errors.New(err)
+				}
+			}
+		}
+	}
+	cmdstring = []string{"sudo", "virsh", "net-list", "--all"}
+	command = utils.SliceExec(cmdstring)
+	out, err = utils.NiceBuffRunner(command, "/home/user")
+	if err != "" {
+		return errors.New(err)
+	}
+	if cluster.Network.Name == "" {
+		cluster.Network.Name = "default"
+	}
+	for _, row := range strings.Split(out, "\n") {
+		if strings.Contains(row, cluster.Network.Name) {
+			if strings.Contains(row, "inactive") {
+				cmdstring := []string{"sudo", "virsh", "net-start", cluster.Network.Name}
+				command := utils.SliceExec(cmdstring)
+				_, err := utils.NiceBuffRunner(command, "/home/user")
+				if err != "" {
+					return errors.New(err)
+				}
+				cmdstring = []string{"sudo", "virsh", "net-autostart", cluster.Network.Name}
+				command = utils.SliceExec(cmdstring)
+				_, err = utils.NiceBuffRunner(command, "/home/user")
+				if err != "" {
+					return errors.New(err)
+				}
+			}
+		}
+	}
 	return nil
 }
