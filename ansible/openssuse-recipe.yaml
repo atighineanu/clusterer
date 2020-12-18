@@ -1,0 +1,22 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  become: False
+
+  tasks:
+  - name: create nomad dir
+    raw: mkdir -p /root/nomad
+
+  - name: install nomad
+    raw: wget https://releases.hashicorp.com/nomad/1.0.1/nomad_1.0.1_linux_amd64.zip
+         unzip nomad_1.0.1_linux_amd64.zip
+         mv nomad /usr/bin/
+
+  - name: copy client.hcl
+    copy:
+      src: ./client.hcl
+      dest: /root/nomad/client.hcl
+      owner: root
+      group: root
+      mode: 0644
