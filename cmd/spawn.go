@@ -33,14 +33,14 @@ var (
 		Short: "spawn is the command to create machines",
 		Long:  ``,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("here is amount of workers: %v\n", workers)
+			//fmt.Printf("here is amount of workers: %v\n", workers)
 			setup()
 			Deploy()
 		},
 	}
 	deploy   = "libvirt"
 	stack    = ""
-	pool     = ""
+	pool     = "default"
 	poolpath = "/home/qcows"
 	distro   = ""
 	workers  = 0
@@ -53,8 +53,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&stack, "stackname", "default", "number of workers in the cluster")
 	rootCmd.PersistentFlags().IntVar(&workers, "workers", 0, "number of workers in the cluster")
 	rootCmd.PersistentFlags().IntVar(&masters, "masters", 0, "number of masters in the cluster")
-	rootCmd.PersistentFlags().StringVarP(&pool, "pool", "p", "", "name of pool for the project")
-	rootCmd.PersistentFlags().StringVarP(&pool, "distro", "d", "", "name of distro in the cluster")
+	rootCmd.PersistentFlags().StringVarP(&pool, "pool", "p", "default", "name of pool for the project")
+	rootCmd.PersistentFlags().StringVarP(&distro, "distro", "d", "", "name of distro in the cluster")
 	//rootCmd.PersistentFlags().StringP("author", "a", "YOUR NAME", "author name for copyright attribution")
 	//rootCmd.PersistentFlags().StringVarP(&userLicense, "license", "l", "", "name of license for the project")
 	//rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
