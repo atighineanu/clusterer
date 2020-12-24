@@ -7,6 +7,10 @@ type Command struct {
 		Name string
 		Path string
 	}
+	Network struct {
+		Name string
+		IP   string
+	}
 	Node             map[string]string
 	SeedVol_Leap     string
 	SeedVol_SLES15_2 string
