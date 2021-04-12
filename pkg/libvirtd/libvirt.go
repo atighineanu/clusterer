@@ -182,3 +182,15 @@ func SanityCheck(cluster data.Command) error {
 	}
 	return nil
 }
+
+func RefreshCluster(cluster data.Command) error {
+	var err error
+	for key, _ := range cluster.Node {
+		err = CheckIfExists(cluster, key)
+	}
+	fmt.Printf("Machine                      IP\n-------------------------------------\n")
+	for key, value := range cluster.Node {
+		fmt.Printf("\n%s      %s\n", key, value)
+	}
+	return err
+}
