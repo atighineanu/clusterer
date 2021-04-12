@@ -1,0 +1,19 @@
+# Ansible tutorial cheat sheet
+
+syntax: ansible <target*> <module> <args/options>
+*target - could be a single machine or a groupd of machines
+
+
+ansible 192.168.122.208 -m ping -i inventory -u root
+ansible 192.168.122.208 -raw "ls -alh" -i inventory -u root -k
+ansible workers -raw "zypper lr -puU" -i inventory -u root
+
+#useful to make mistakes 
+ansible all -m ping -a "blah" -i inventory -u root
+
+#run a script on remote machine(s)
+ansible 192.168.122.208 -m script -a "script.sh" -u root -i inventory
+
+#if you want to not indicate -i inventory file - set your inventory in /etc/ansible/config
+
+#more complicated stuff 
