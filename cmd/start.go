@@ -29,13 +29,9 @@ import (
 var (
 	startCmd = &cobra.Command{
 		Use:   "start",
-		Short: "A brief description of your command",
-		Long: `A longer description that spans multiple lines and likely contains examples
-		and usage of using your command. For example:
-
-		Cobra is a CLI library for Go that empowers applications.
-		This application is a tool to generate the needed files
-		to quickly create a Cobra application.`,
+		Short: "starts newly created machines in the cluster",
+		Long: `starts the created machines in the cluster;
+		it waits for the VM IPs to be up, before reporting that all machines are ready`,
 		Run: func(cmd *cobra.Command, args []string) {
 			log.Println("starting cluster nodes...")
 			StartCluster()
