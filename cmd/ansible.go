@@ -17,8 +17,11 @@ package cmd
 
 import (
 	"fmt"
-	"pkg/ansible"
+	"clusterer/pkg/ansible"
 	"github.com/spf13/cobra"
+	"clusterer/pkg/utils"
+	"log"
+	"path/filepath"
 )
 
 // ansibleCmd represents the ansible command
@@ -29,7 +32,7 @@ var (
 	Short: "ansible - related command. Runs with additional flags.",
 	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ansible called")
+		run()
 	},
 }
 )
@@ -48,8 +51,15 @@ func init() {
 	// ansibleCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func Run() {
+func run() {
+	cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+	}
 	if populate {
-
+		err := ansible.PopulateInventory(*cluster, RootDir)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
 	}
 }
