@@ -30,7 +30,7 @@ import (
 var (
 	spawnCmd = &cobra.Command{
 		Use:   "spawn",
-		Short: "spawn is the command to create machines",
+		Short: "command to create machines; works with --workers --masters --pool --stackname (and other) flags",
 		Long:  ``,
 		Run: func(cmd *cobra.Command, args []string) {
 			//fmt.Printf("here is amount of workers: %v\n", workers)
