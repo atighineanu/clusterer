@@ -1,0 +1,15 @@
+---
+- import_playbook: ls-alh-recipe.yaml
+- import_playbook: playbook1.yaml
+
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  become: False
+
+  tasks:
+  - name: install nmap
+    community.general.zypper:
+        name: nmap
+        state: present
+        disable_recommends: no

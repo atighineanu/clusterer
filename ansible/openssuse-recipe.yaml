@@ -20,3 +20,6 @@
       owner: root
       group: root
       mode: 0644
+  
+  - name: create nomad service
+    raw: echo $(var) > /etc/systemd/system/nomad.service

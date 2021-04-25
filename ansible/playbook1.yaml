@@ -1,0 +1,14 @@
+---
+- hosts: workers
+  gather_facts: True
+  become: False
+  remote_user: root
+
+  tasks:
+  - name: run zypper lr
+    shell: zypper lr
+    register: zypper_lr_output
+    when: ansible_facts['os_family'] == "Suse"
+
+  - debug:
+      var: zypper_lr_output.stdout_lines
