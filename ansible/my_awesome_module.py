@@ -1,4 +1,7 @@
 #!/usr/bin/python
+#
+# MORE INFO HERE: >>> https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html
+#
 
 # Copyright: (c) 2018, Terry Jones <terry.jones@example.org>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -76,7 +79,8 @@ def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
         name=dict(type='str', required=True),
-        new=dict(type='bool', required=False, default=False)
+        new=dict(type='bool', required=False, default=False),
+        awesome=dict(type='str', required=False, default='')
     )
 
     # seed the result dict in the object
@@ -120,6 +124,9 @@ def run_module():
     # AnsibleModule.fail_json() to pass in the message and the result
     if module.params['name'] == 'fail me':
         module.fail_json(msg='You requested this to fail', **result)
+    
+    if module.params['awesome'] == 'yes':
+        module.exit_json(msg='YOU HAVE SUCCESSFULLY TRIGGERED AWESOME FEATURE!', **result)
 
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results

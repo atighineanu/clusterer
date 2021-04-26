@@ -2,10 +2,11 @@
 - hosts: all
   gather_facts: False
   remote_user: root
-  become: False
+  become: True
+  become_user: user
 
   tasks:
   - zypper:
-      name: apache2
+      name: '*'
       type: package
-      state: present
+      state: latest

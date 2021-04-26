@@ -16,6 +16,5 @@ ansible 192.168.122.208 -m script -a "script.sh" -u root -i inventory
 
 #if you want to not indicate -i inventory file - set your inventory in /etc/ansible/config
 
-#more complicated stuff 
 #if you want to see how does gather_facts json looks like:
 ansible 192.168.122.208 -m setup --tree /tmp/facts -u root

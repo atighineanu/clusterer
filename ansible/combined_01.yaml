@@ -2,7 +2,7 @@
 - import_playbook: ls-alh-recipe.yaml
 - import_playbook: playbook1.yaml
 
-- hosts: all
+- hosts: workers
   gather_facts: False
   remote_user: root
   become: False
