@@ -1,0 +1,27 @@
+---
+- hosts: "{{ host_ip }}"
+  gather_facts: False
+  remote_user: root
+  become: False
+
+  tasks: 
+  - name: install avahi
+    raw: zypper -n install avahi
+    register: zypper_in_output
+
+  - debug:
+      var: zypper_in_output.stdout_lines
+  
+  - name: edit /etc/avahi/avahi-daemon.conf
+    raw: sed -i s/"#domain-name=local"/"domain-name=tf.local"/g /etc/avahi/avahi-daemon.conf
+  
+  - name: edit /etc/nsswitch.conf
+    raw: sed -i s/"files mdns_minimal"/"files mdns"/g /etc/nsswitch.conf
+  
+  - name: edit /etc/mdns.allow
+    raw: echo ".local" > /etc/mdns.allow; echo ".tf.local" >> /etc/mdns.allow
+
+  - systemd:
+      name: avahi-daemon
+      enabled: yes
+      state: started
