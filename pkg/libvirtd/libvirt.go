@@ -13,6 +13,25 @@ import (
 	"time"
 )
 
+func DefineVMfromXML(path string, remotehostIP string) (string, error) {
+	command := []string{"virsh", "define", path}
+	//cmd := exec.Command(command[0], command[1:]...)
+	cmd := utils.SSHCommand(remotehostIP, command...)
+	out, _ := utils.NiceBuffRunner(cmd, "./")
+	tmp := strings.Split(out, "\n")
+	var machine string
+	for _, line := range tmp {
+		if strings.Contains(line, "defined") {
+			chunkedline := strings.Split(line, " ")
+			if strings.Contains(chunkedline[0], "Domain") && strings.Contains(chunkedline[1], "xenvirthost") {
+				machine = chunkedline[1]
+				fmt.Printf("Machine: %s\n", machine)
+			}
+		}
+	}
+	return machine, nil
+} 
+
 func CloneVol(cluster data.Command, seed string, machine string) error {
 	log.Println("Clonning Volume(s)...")
 	cmdstring := []string{"sudo", "virsh", "vol-clone", seed, machine, "--pool", cluster.Pool.Name}
@@ -35,13 +54,18 @@ func CloneVM(cluster data.Command, seed string, machine string) error {
 	return nil
 }
 
-func StartVM(machine string) error {
+func StartVM(machine string, remote string) error {
 	log.Println("Starting VM(s)...")
 	cmdstring := []string{"sudo", "virsh", "start", machine}
-	command := utils.SliceExec(cmdstring)
-	_, err := utils.NiceBuffRunner(command, "/home/user")
-	if err != "" {
-		return errors.New(err)
+	if remote == "" {
+		command := utils.SliceExec(cmdstring)
+		_, err := utils.NiceBuffRunner(command, "/home/user")
+		if err != "" {
+			return errors.New(err)
+		}
+	} else {
+		cmd := utils.SSHCommand(remote, cmdstring...)
+		utils.NiceBuffRunner(cmd, "./")
 	}
 	return nil
 }
@@ -98,7 +122,7 @@ func SeeIfOffline(cluster data.Command, machine string) error {
 	for _, row := range strings.Split(resp, "\n") {
 		if strings.Contains(row, machine) || strings.Contains(row, "shut off") {
 			log.Printf("Machine % offline. Starting...\n", machine)
-			StartVM(machine)
+			StartVM(machine, "")
 		} else {
 			log.Println("Domain unexistent. Removing all disks related to the machine...")
 			delete(cluster.Node, machine)

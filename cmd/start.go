@@ -60,7 +60,7 @@ func StartCluster() {
 	}
 	libvirtd.SanityCheck(*cluster)
 	for index, _ := range cluster.Node {
-		libvirtd.StartVM(index)
+		libvirtd.StartVM(index, "")
 	}
 	time.Sleep(17 * time.Second)
 	for index, _ := range cluster.Node {

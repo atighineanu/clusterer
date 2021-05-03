@@ -12,7 +12,32 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
+//	"time"
 )
+
+func ChangeXMLSpec(path string) error {
+	fmt.Println(path)
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	fmt.Println(data)
+	return nil
+}
+
+func CopyRawDisks(remotehostIP string, ftpservIP string, distro string) (string, error) {
+	_, xml := filepath.Split(fmt.Sprintf("http://%s/sle%s-fake-NEW.xml", ftpservIP, distro))
+	fmt.Printf("XML: %s\n", xml)
+	//time.Sleep(30 * time.Second)
+	command := []string{"wget", fmt.Sprintf("http://%s/sle%s_fake_baremetal_xenvirthost_client.qcow2", ftpservIP, distro), fmt.Sprintf("http://%s/%s", ftpservIP, xml), "-P", "/var/lib/libvirt/images/"}
+	cmd := SSHCommand(remotehostIP, command...)
+	pwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	NiceBuffRunner(cmd, pwd)
+	return filepath.Join("/var/lib/libvirt/images/", xml), nil
+}
 
 func SaveJSN(rootdir string, cluster data.Command) error {
 	file, err := json.MarshalIndent(cluster, "", " ")
