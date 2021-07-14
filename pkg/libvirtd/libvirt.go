@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -30,7 +32,7 @@ func DefineVMfromXML(path string, remotehostIP string) (string, error) {
 		}
 	}
 	return machine, nil
-} 
+}
 
 func CloneVol(cluster data.Command, seed string, machine string) error {
 	log.Println("Clonning Volume(s)...")
@@ -70,35 +72,58 @@ func StartVM(machine string, remote string) error {
 	return nil
 }
 
-func WaitForIP(cluster data.Command, machine string) error {
-	CheckIfExists(cluster, machine)
+func WaitForIP(cluster data.Command, machine, remote string) error {
+	CheckIfExists(cluster, machine, remote)
 	return nil
 }
 
-func CheckIfExists(cluster data.Command, machine string) error {
+func CmdRemoteSpitter(cmd []string, remote string) *exec.Cmd {
+	if remote == "" {
+		return exec.Command(cmd[0], cmd[1:]...)
+	} else {
+		return utils.SSHCommand(remote, cmd...)
+	}
+}
+
+func CheckIfExists(cluster data.Command, machine, remote string) error {
+	inc := 0
 	for {
 		cmdstring := []string{"sudo", "virsh", "domifaddr", machine, "--source", "agent"}
-		resp, err := exec.Command(cmdstring[0], cmdstring[1:]...).CombinedOutput()
+		comm := CmdRemoteSpitter(cmdstring, remote)
+		resp, err := comm.CombinedOutput()
+		fmt.Println(fmt.Sprintf("%s", string(resp)))
 		if err != nil {
 			cmdstring2 := []string{"sudo", "virsh", "list"}
-			resp2, err2 := exec.Command(cmdstring2[0], cmdstring2[1:]...).CombinedOutput()
+			comm2 := CmdRemoteSpitter(cmdstring2, remote)
+			resp2, err2 := comm2.CombinedOutput()
 			if err2 != nil {
 				return err2
 			}
+			fmt.Println(fmt.Sprintf("%s", string(resp2)))
 			if strings.Contains(fmt.Sprintf("%s", string(resp2)), machine) {
 				log.Println("Machine not ready yet...")
 				time.Sleep(3 * time.Second)
 			} else {
 				log.Println("Looks like machine doesn't exist or offline...Will see if we remove it from cluster catalogue...")
-				SeeIfOffline(cluster, machine)
+				SeeIfOffline(cluster, machine, remote)
 			}
 		} else {
 			found := false
 			for _, row := range strings.Split(fmt.Sprintf("%s", string(resp)), "\n") {
-				if strings.Contains(row, "eth0") && strings.Contains(row, "ipv4") {
-					//fmt.Printf("iaca IP: %s\n", strings.Split(row, " ")[len(strings.Split(row, " "))-1])
-					cluster.Node[machine] = strings.Split(strings.Split(row, " ")[len(strings.Split(row, " "))-1], "/")[0]
-					found = true
+				if (strings.Contains(row, "eth") || strings.Contains(row, "br")) && strings.Contains(row, "ipv4") {
+					reg := regexp.MustCompile(`\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}/\d{2}`)
+					//mac := regexp.MustCompile()
+					if len(reg.FindStringSubmatch(row)) > 0 {
+						var temp net.HardwareAddr
+						for _, value := range strings.Split(row, " ") {
+							temp, err = net.ParseMAC(value)
+							if err == nil {
+								break
+							}
+						}
+						log.Printf("Found a proper IP for the newly spawned VM...\n(libvirt) Machine name: %s\nIP: %s\nMAC: %v", machine, reg.FindStringSubmatch(row)[0], temp)
+						found = true
+					}
 				}
 			}
 			if !found {
@@ -107,22 +132,32 @@ func CheckIfExists(cluster data.Command, machine string) error {
 				break
 			}
 		}
-		time.Sleep(3 * time.Second)
+		time.Sleep(5 * time.Second)
+		if inc >= 20 {
+			log.Printf("May be check your target machine's availability.\nvirsh domifaddr %s --source agent still doesn't return a proper result...", machine)
+		}
+		inc++
 	}
 	return nil
 }
 
-func SeeIfOffline(cluster data.Command, machine string) error {
+func SeeIfOffline(cluster data.Command, machine, remote string) error {
 	cmdstring := []string{"sudo", "virsh", "list", "--all"}
-	command := utils.SliceExec(cmdstring)
-	resp, err := utils.NiceBuffRunner(command, "/home/user")
+	var resp, err string
+	if remote == "" {
+		command := utils.SliceExec(cmdstring)
+		resp, err = utils.NiceBuffRunner(command, "/home/user")
+	} else {
+		cmd := utils.SSHCommand(remote, cmdstring...)
+		resp, err = utils.NiceBuffRunner(cmd, "./")
+	}
 	if err != "" {
 		return errors.New(err)
 	}
 	for _, row := range strings.Split(resp, "\n") {
 		if strings.Contains(row, machine) || strings.Contains(row, "shut off") {
 			log.Printf("Machine % offline. Starting...\n", machine)
-			StartVM(machine, "")
+			StartVM(machine, remote)
 		} else {
 			log.Println("Domain unexistent. Removing all disks related to the machine...")
 			delete(cluster.Node, machine)
@@ -210,7 +245,7 @@ func SanityCheck(cluster data.Command) error {
 func RefreshCluster(cluster data.Command) error {
 	var err error
 	for key, _ := range cluster.Node {
-		err = CheckIfExists(cluster, key)
+		err = CheckIfExists(cluster, key, "")
 	}
 	fmt.Printf("Machine                      IP\n-------------------------------------\n")
 	for key, value := range cluster.Node {
