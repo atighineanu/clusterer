@@ -64,7 +64,7 @@ func StartCluster() {
 	}
 	time.Sleep(17 * time.Second)
 	for index, _ := range cluster.Node {
-		libvirtd.WaitForIP(*cluster, index)
+		libvirtd.WaitForIP(*cluster, index, remotehostIP)
 		time.Sleep(3 * time.Second)
 	}
 	if err := utils.SaveJSN(RootDir, *cluster); err != nil {
