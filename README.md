@@ -1,5 +1,13 @@
-#### cookie:
-The clusterer tool also has a non-related (to public cloud) feature "createvm" that creates virtual machines on a remote host (using ssh)
-from the qcow2 images and xml vm description from http://rock229.qa.prv.suse.net (these XML files correspond to sle 15.1 - 15.3 OS versions
-and are used for testing Xen virtualhosts as SUMA clients; they are already set up to boot from Xen vmlinuz image and XMLs are modified to 
-seem like a bare-metal machine; more details inside the )
+#### *CLUSTERER*  - a lightweight tool that uses libvirt - related (os) commands to manage VMs locally or on a remote VirtHost.
+
+For cloning & creating a "fake" bare-metal Xen VirtHost (Which will be a SUMA Client)... on your remote Virtualization Host - run
+`clusterer fakexenbm --rmtip <val> --distro "<val>"`
+
+*fakexenbm* - from fake xen bare-metal 
+
+*--rmtip* - from "remote IP" - the ip of your remote VM Host/ could be one of the "rock" machines
+
+*--distro* - from (sles) "distribution" sles distro with possible values '15.1', '15.2', '15.3'
+
+for example you can run: `clusterer fakexenbm --rmtip 10.84.154.100 --distro 15.3`
+this will copy a compressed qcow2 image, and an xml-vm-profile from  10.84.149.229/ on your remote machine, will create the vm and start it.
