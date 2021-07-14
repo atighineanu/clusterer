@@ -17,34 +17,38 @@ package cmd
 
 import (
 	//"fmt"
-	"clusterer/pkg/utils"
 	"clusterer/pkg/libvirtd"
-	"github.com/spf13/cobra"
+	"clusterer/pkg/utils"
 	"log"
+
+	"github.com/spf13/cobra"
 )
 
 // fakexenbmCmd represents the fakexenbm command
 var (
 	fakexenbmCmd = &cobra.Command{
-	Use:   "fakexenbm",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
+		Use:   "fakexenbm",
+		Short: "creates a \"fake XEN bare-metal machine as virthost\"",
+		Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		run3()
-	},
-}
-remotehostIP = ""
+		Run: func(cmd *cobra.Command, args []string) {
+			run3()
+		},
+	}
+	remotehostIP = "10.84.149.229" // remote host on which you want to creates the XEN vms
+	ftpHostIP    = "10.84.149.229" // remote host which has the virtual machine xmls and qcows for creating the Xen vms
+
 //distro = ""
 )
 
 func init() {
 	rootCmd.AddCommand(fakexenbmCmd)
-	rootCmd.PersistentFlags().StringVar(&remotehostIP, "rmtip", "", "the remote host's IP address")
+	rootCmd.PersistentFlags().StringVar(&remotehostIP, "rmtip", "10.84.149.229", "the remote host's IP address")
+	rootCmd.PersistentFlags().StringVar(&ftpHostIP, "sourceip", "10.84.149.229", "the remote host's IP address")
 	//rootCmd.PersistentFlags().StringVar(&distro, "distro", "", "the SLES distribution")
 	// Here you will define your flags and configuration settings.
 
@@ -57,16 +61,15 @@ func init() {
 	// fakexenbmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-
 func run3() {
-	
-	path, err := utils.CopyRawDisks(remotehostIP, "10.84.149.229", distro) //CopyRawDisks(RemoteHostIP, FTPserverIP, Distro)
+	path, err := utils.CopyRawDisks(remotehostIP, ftpHostIP, distro) //CopyRawDisks(RemoteHostIP, FTPserverIP, Distro)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 	}
-	machine, _ := libvirtd.DefineVMfromXML(path, "10.84.149.229")
-	
+	machine, _ := libvirtd.DefineVMfromXML(path, remotehostIP)
+
 	//machine := "sle15.2_fake_baremetal_xenvirthost_client"
 	libvirtd.StartVM(machine, remotehostIP)
+	libvirtd.CheckIfExists(cluster, machine, remotehostIP)
 	//utils.ChangeXMLSpec(path)
 }
