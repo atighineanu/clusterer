@@ -1,5 +1,10 @@
 package data
 
+type MU struct {
+	Prefix         string
+	Incident       string
+	ReleaseRequest string
+}
 type Command struct {
 	Deploy    string
 	StackName string
