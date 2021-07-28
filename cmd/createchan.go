@@ -18,6 +18,8 @@ package cmd
 import (
 	"clusterer/pkg/utils"
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/sclevine/agouti"
@@ -40,15 +42,18 @@ to quickly create a Cobra application.`,
 			createChanFromMU()
 		},
 	}
-	url      string
-	chanName string
-	srvIP    string
+	url            string
+	chanName       string
+	srvIP          string
+	createOrg      bool
+	createChanRepo bool
 )
 
 func init() {
 	rootCmd.AddCommand(createchanCmd)
 	rootCmd.PersistentFlags().StringVar(&srvIP, "srvip", "10.84.149.229", "SUMA Server's IP address")
 	rootCmd.PersistentFlags().StringVar(&chanName, "channel", "default001", "custom channel's name")
+	rootCmd.PersistentFlags().BoolVarP(&createOrg, "createorg", "o", false, "triggers org creation")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
@@ -61,17 +66,22 @@ func init() {
 }
 
 func createChanFromMU() {
-	url := "https://10.84.153.251/"
+	url := fmt.Sprintf("https://%s/", srvIP)
 	page, err := utils.StartChromeSession(url, 300)
 	utils.ErrHandler(err, "Error while starting chromium session:")
-	//CreateOrg(page)
+	if createOrg {
+		log.Println("Creating organization...")
+		CreateOrg(page)
+		os.Exit(3)
+	}
+
 	Login(page)
 	time.Sleep(3 * time.Second)
 	urlChan := url + "rhn/channels/manage/Manage.do"
 	err = page.Navigate(urlChan)
 	utils.ErrHandler(err, "Couldn't find page:")
 	time.Sleep(3 * time.Second)
-	CreateCustomChannel(page, urlChan, "admin001")
+	CreateCustomChannel(page, urlChan, "admin001", "http://download.suse.de/ibs/SUSE:/Maintenance:/20208/SUSE_SLE-15-SP1_Update/")
 	time.Sleep(10 * time.Second)
 }
 
@@ -84,7 +94,7 @@ func FillElem(page *agouti.Page, patternToFind, fillingText string) {
 
 func SelectFromForm(page *agouti.Page, patternToFind, selectOpt string) {
 	elem := page.FindByName("prefix")
-	fmt.Println(elem)
+	//fmt.Println(elem)
 	//utils.ErrHandler(err, "Element wasn't found:")
 	err := elem.Click()
 	utils.ErrHandler(err, "Element can't be clicked:")
@@ -126,7 +136,11 @@ func Login(page *agouti.Page) *agouti.Page {
 	return page
 }
 
-func CreateCustomChannel(page *agouti.Page, url, channelName string) {
+func FindParentChannel(page *agouti.Page, url, channelName, MUrepo string) {
+
+}
+
+func CreateCustomChannel(page *agouti.Page, url, channelName, MUrepo string) {
 	/*
 		err := page.FindByClass("fa-plus").Click()
 		utils.ErrHandler(err, "Element can't be clicked:")
@@ -156,7 +170,7 @@ func CreateCustomChannel(page *agouti.Page, url, channelName string) {
 	utils.ErrHandler(err, "Element can't be clicked:")
 	time.Sleep(2 * time.Second)
 	err = page.FindByName("label").Fill("mu-20208")
-	err = page.FindByName("url").Fill("http://download.suse.de/ibs/SUSE:/Maintenance:/20208/SUSE_SLE-15-SP1_Update/")
+	err = page.FindByName("url").Fill(MUrepo)
 	ClickButton(page, "btn-success")
 	time.Sleep(2 * time.Second)
 	//fmt.Println(page.URL())
