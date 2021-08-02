@@ -42,11 +42,13 @@ to quickly create a Cobra application.`,
 			createChanFromMU()
 		},
 	}
-	url            string
-	chanName       string
-	srvIP          string
-	createOrg      bool
-	createChanRepo bool
+	url             string
+	chanName        string
+	srvIP           string
+	createOrg       bool
+	createChanRepo  bool
+	deleteRepos     bool
+	createReposJson string
 )
 
 func init() {
@@ -54,6 +56,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&srvIP, "srvip", "10.84.149.229", "SUMA Server's IP address")
 	rootCmd.PersistentFlags().StringVar(&chanName, "channel", "default001", "custom channel's name")
 	rootCmd.PersistentFlags().BoolVarP(&createOrg, "createorg", "o", false, "triggers org creation")
+	rootCmd.PersistentFlags().BoolVar(&deleteRepos, "deleterepos", false, "triggers all MU repos deletion")
+	rootCmd.PersistentFlags().StringVar(&createReposJson, "reposjson", "", "path to json with all BV MU repositories")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
@@ -66,9 +70,20 @@ func init() {
 }
 
 func createChanFromMU() {
+	a, err := utils.GetJson()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+	}
+	channels, err := utils.CreateChannelNames(a)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+	}
+
+	//time.Sleep(100 * time.Second)
 	url := fmt.Sprintf("https://%s/", srvIP)
 	page, err := utils.StartChromeSession(url, 300)
 	utils.ErrHandler(err, "Error while starting chromium session:")
+
 	if createOrg {
 		log.Println("Creating organization...")
 		CreateOrg(page)
@@ -77,6 +92,35 @@ func createChanFromMU() {
 
 	Login(page)
 	time.Sleep(3 * time.Second)
+
+	if createReposJson != "" {
+		var counter int
+		for index, value := range channels {
+			urlChan := url + "rhn/channels/manage/Manage.do"
+			err = page.Navigate(urlChan)
+			err = CreateRepo(page, value, index, counter)
+			if err != nil {
+				log.Fatalf("Error: %v\n", err)
+			}
+			counter++
+			if counter == len(channels) {
+				os.Exit(3)
+			}
+		}
+
+	}
+
+	if deleteRepos {
+		for {
+			urlChan := url + "rhn/channels/manage/Manage.do"
+			err = page.Navigate(urlChan)
+			err = DeleteAllRepos(page)
+			if err != nil {
+				log.Fatalf("Error: %v\n", err)
+			}
+		}
+	}
+
 	urlChan := url + "rhn/channels/manage/Manage.do"
 	err = page.Navigate(urlChan)
 	utils.ErrHandler(err, "Couldn't find page:")
@@ -138,6 +182,35 @@ func Login(page *agouti.Page) *agouti.Page {
 
 func FindParentChannel(page *agouti.Page, url, channelName, MUrepo string) {
 
+}
+
+func CreateRepo(page *agouti.Page, label, url string, count int) (err error) {
+	err = page.FindByXPath("//a[@href=\"/rhn/channels/manage/repos/RepoList.do\"]").Click()
+	utils.ErrHandler(err, "Element can't be clicked:")
+	time.Sleep(1 * time.Second)
+	err = page.FindByXPath("//a[text()=\"Create Repository\"]").Click()
+	utils.ErrHandler(err, "Element can't be clicked:")
+	time.Sleep(1 * time.Second)
+	err = page.FindByName("label").Fill(label)
+	err = page.FindByName("url").Fill(url)
+	ClickButton(page, "btn-success")
+	time.Sleep(2 * time.Second)
+	return
+}
+
+func DeleteAllRepos(page *agouti.Page) (err error) {
+	err = page.FindByXPath("//a[@href=\"/rhn/channels/manage/repos/RepoList.do\"]").Click()
+	utils.ErrHandler(err, "Element can't be clicked:")
+	time.Sleep(1 * time.Second)
+	err = page.FirstByXPath("//tr[@class=\"list-row-odd\"]/td/a").Click()
+	utils.ErrHandler(err, "Element can't be clicked:")
+	time.Sleep(2 * time.Second)
+	err = page.FindByXPath("//i[@title=\"Delete Repository\"]").Click()
+	utils.ErrHandler(err, "Element can't be clicked:")
+	time.Sleep(2 * time.Second)
+	err = page.FindByXPath("//input[@value=\"Delete Repository\"]").Click()
+	utils.ErrHandler(err, "Element can't be clicked:")
+	return
 }
 
 func CreateCustomChannel(page *agouti.Page, url, channelName, MUrepo string) {
