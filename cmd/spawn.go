@@ -16,11 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"clusterer/pkg/data"
 	"clusterer/pkg/libvirtd"
 	"clusterer/pkg/utils"
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -45,11 +45,13 @@ var (
 	distro   = ""
 	workers  = 0
 	masters  = 0
-	cluster  data.Command
+	jsn      = false
+	err      error
 )
 
 func init() {
 	rootCmd.AddCommand(spawnCmd)
+	rootCmd.PersistentFlags().BoolVar(&jsn, "json", false, "triggers output in json")
 	rootCmd.PersistentFlags().StringVar(&stack, "stackname", "default", "number of workers in the cluster")
 	rootCmd.PersistentFlags().IntVar(&workers, "workers", 0, "number of workers in the cluster")
 	rootCmd.PersistentFlags().IntVar(&masters, "masters", 0, "number of masters in the cluster")
@@ -60,41 +62,46 @@ func init() {
 	//rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
 	//viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
 	//viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
+	Cluster, err = utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+	}
 }
 
 func setup() {
-	cluster.Deploy = deploy
-	cluster.StackName = stack
-	cluster.Workers.Count = workers
-	cluster.Masters.Count = masters
+	//fmt.Println(Cluster)
+	Cluster.Deploy = deploy
+	Cluster.StackName = stack
+	Cluster.Workers.Count = workers
+	Cluster.Masters.Count = masters
 	if pool != "" {
-		cluster.Pool.Name = pool
-		cluster.Pool.Path = poolpath
+		Cluster.Pool.Name = pool
+		Cluster.Pool.Path = poolpath
 	}
-	cluster.SeedVol_Leap = "opensuse-seed.qcow2"
-	cluster.SeedVM_Leap = "opensuse-seed"
+	Cluster.SeedVol_Leap = "opensuse-seed.qcow2"
+	Cluster.SeedVM_Leap = "opensuse-seed"
 	if distro != "" {
-		cluster.Workers.Distro = distro
-		cluster.Masters.Distro = distro
+		Cluster.Workers.Distro = distro
+		Cluster.Masters.Distro = distro
 	}
-	cluster.Node = make(map[string]string)
-	if err := utils.SaveJSN(RootDir, cluster); err != nil {
+	Cluster.Node = make(map[string]string)
+	if err := Cluster.SaveJSN(RootDir); err != nil {
 		log.Printf("Error while saving the json file: %v", err)
 	}
 }
 
 func Deploy() {
-	for i := 0; i < cluster.Workers.Count; i++ {
-		cluster.Node[fmt.Sprintf("%s-%s-%v", cluster.StackName, "workers", i)] = ""
+	for i := 0; i < Cluster.Workers.Count; i++ {
+		Cluster.Node[fmt.Sprintf("%s-%s-%v", Cluster.StackName, "workers", i)] = ""
 	}
-	for i := 0; i < cluster.Masters.Count; i++ {
-		cluster.Node[fmt.Sprintf("%s-%s-%v", cluster.StackName, "masters", i)] = ""
+	for i := 0; i < Cluster.Masters.Count; i++ {
+		Cluster.Node[fmt.Sprintf("%s-%s-%v", Cluster.StackName, "masters", i)] = ""
 	}
-	for index, _ := range cluster.Node {
-		libvirtd.CloneVol(cluster, cluster.SeedVol_Leap, index)
-		libvirtd.CloneVM(cluster, cluster.SeedVM_Leap, index)
+	for index, _ := range Cluster.Node {
+		libvirtd.CloneVol(*Cluster, Cluster.SeedVol_Leap, index)
+		libvirtd.CloneVM(*Cluster, Cluster.SeedVM_Leap, index)
 	}
-	if err := utils.SaveJSN(RootDir, cluster); err != nil {
+	if err := Cluster.SaveJSN(RootDir); err != nil {
 		log.Printf("Error while saving the json file: %v", err)
 	}
 }

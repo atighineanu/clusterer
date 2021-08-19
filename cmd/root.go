@@ -16,14 +16,19 @@ limitations under the License.
 package cmd
 
 import (
+	"clusterer/pkg/utils"
 	"fmt"
-	"github.com/spf13/cobra"
+	"log"
 	"os"
+	"path/filepath"
+
+	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
+var Cluster *utils.Command
 var RootDir = "/home/user/scripts/github.com/atighineanu/clusterer"
 var cfgFile string
 
@@ -84,5 +89,13 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+	Cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+	}
+	//fmt.Printf("CLSUTER: %+v", Cluster)
+	if Cluster == nil {
+		log.Fatalf("Error: Cluster is NIL; check your config settings")
 	}
 }

@@ -16,30 +16,31 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"clusterer/pkg/ansible"
-	"github.com/spf13/cobra"
 	"clusterer/pkg/utils"
+	"fmt"
 	"log"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
 // ansibleCmd represents the ansible command
 var (
-	populate bool
+	populate   bool
 	ansibleCmd = &cobra.Command{
-	Use:   "ansible",
-	Short: "ansible - related command. Runs with additional flags.",
-	Long: ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		run()
-	},
-}
+		Use:   "ansible",
+		Short: "ansible - related command. Runs with additional flags.",
+		Long:  ``,
+		Run: func(cmd *cobra.Command, args []string) {
+			run()
+		},
+	}
 )
 
 func init() {
 	rootCmd.AddCommand(ansibleCmd)
-	rootCmd.PersistentFlags().BoolVar(&populate,"populate", false, "triggers population of ./ansible/inventory with corresponding IP list (distributed per tag)")
+	rootCmd.PersistentFlags().BoolVar(&populate, "populate", false, "triggers population of ./ansible/inventory with corresponding IP list (distributed per tag)")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
@@ -52,12 +53,12 @@ func init() {
 }
 
 func run() {
-	cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
+	Cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 	}
 	if populate {
-		err := ansible.PopulateInventory(*cluster, RootDir)
+		err := ansible.PopulateInventory(*Cluster, RootDir)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}

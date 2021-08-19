@@ -17,9 +17,7 @@ package cmd
 
 import (
 	"clusterer/pkg/libvirtd"
-	"clusterer/pkg/utils"
 	"log"
-	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -54,20 +52,17 @@ func init() {
 }
 
 func StartCluster() {
-	cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
-	if err != nil {
-		log.Printf("ERROR: %v", err)
-	}
-	libvirtd.SanityCheck(*cluster)
-	for index, _ := range cluster.Node {
+
+	libvirtd.SanityCheck(*Cluster)
+	for index, _ := range Cluster.Node {
 		libvirtd.StartVM(index, "")
 	}
 	time.Sleep(17 * time.Second)
-	for index, _ := range cluster.Node {
-		libvirtd.WaitForIP(*cluster, index, remotehostIP)
+	for index, _ := range Cluster.Node {
+		libvirtd.WaitForIP(*Cluster, index, remotehostIP)
 		time.Sleep(3 * time.Second)
 	}
-	if err := utils.SaveJSN(RootDir, *cluster); err != nil {
+	if err := Cluster.SaveJSN(RootDir); err != nil {
 		log.Printf("Error while saving the json file: %v", err)
 	}
 }

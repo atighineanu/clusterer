@@ -70,6 +70,6 @@ func run3() {
 
 	//machine := "sle15.2_fake_baremetal_xenvirthost_client"
 	libvirtd.StartVM(machine, remotehostIP)
-	libvirtd.CheckIfExists(cluster, machine, remotehostIP)
+	libvirtd.CheckIfExists(*Cluster, machine, remotehostIP, true)
 	//utils.ChangeXMLSpec(path)
 }

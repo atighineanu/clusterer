@@ -18,9 +18,10 @@ package cmd
 import (
 	"clusterer/pkg/libvirtd"
 	"clusterer/pkg/utils"
-	"github.com/spf13/cobra"
-	"path/filepath"
 	"log"
+	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
 // listCmd represents the list command
@@ -30,11 +31,11 @@ var listCmd = &cobra.Command{
 	Long: `lists and refreshes the guest hosts created;
 	additionally, it updates the actual IPs of every guest machine.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
+		Cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
 		if err != nil {
 			log.Printf("ERROR: %v", err)
 		}
-		libvirtd.RefreshCluster(*cluster)
+		libvirtd.RefreshCluster(*Cluster, jsn)
 	},
 }
 
@@ -51,4 +52,3 @@ func init() {
 	// is called directly, e.g.:
 	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-

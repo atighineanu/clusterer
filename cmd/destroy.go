@@ -20,6 +20,7 @@ import (
 	"clusterer/pkg/utils"
 	"log"
 	"path/filepath"
+
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +29,7 @@ var (
 	destroyCmd = &cobra.Command{
 		Use:   "destroy",
 		Short: "destroys all the machines in the cluster.",
-		Long: ``,
+		Long:  ``,
 		Run: func(cmd *cobra.Command, args []string) {
 			Run()
 		},
@@ -42,16 +43,16 @@ func init() {
 }
 
 func Run() {
-	cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
+	Cluster, err := utils.OpenJSN(filepath.Join(RootDir, "cluster.json"))
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 	}
 	if all {
-		for index, _ := range cluster.Node {
-			libvirtd.Destroy(*cluster, index)
+		for index, _ := range Cluster.Node {
+			libvirtd.Destroy(*Cluster, index)
 		}
 	}
-	if err := utils.SaveJSN(RootDir, *cluster); err != nil {
+	if err := Cluster.SaveJSN(RootDir); err != nil {
 		log.Printf("Error while saving the json file: %v", err)
 	}
 }
