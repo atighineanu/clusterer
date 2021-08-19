@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"clusterer/pkg/data"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -41,7 +40,7 @@ func CopyRawDisks(remotehostIP string, ftpservIP string, distro string) (string,
 	return filepath.Join("/var/lib/libvirt/images/", xml), nil
 }
 
-func SaveJSN(rootdir string, cluster data.Command) error {
+func (cluster *Command) SaveJSN(rootdir string) error {
 	file, err := json.MarshalIndent(cluster, "", " ")
 	if err != nil {
 		return err
@@ -53,17 +52,17 @@ func SaveJSN(rootdir string, cluster data.Command) error {
 	return nil
 }
 
-func OpenJSN(filelocation string) (*data.Command, error) {
-	var cluster *data.Command
+func OpenJSN(filelocation string) (cluster *Command, err error) {
 	file, err := os.Open(filelocation)
 	defer file.Close()
 	if err != nil {
-		return nil, err
+		return
 	}
-	if err := json.NewDecoder(file).Decode(&cluster); err != nil {
-		return nil, err
+	if err = json.NewDecoder(file).Decode(&cluster); err != nil {
+		return
 	}
-	return cluster, nil
+	//fmt.Printf("CLUSTER: %v\n", cluster)
+	return
 }
 
 func SliceExec(command []string) *exec.Cmd {
