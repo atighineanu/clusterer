@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: False
+  become: False
+  remote_user: root
+
+  tasks:
+    - name: "install python-xml"
+      raw: zypper -n install python-xml

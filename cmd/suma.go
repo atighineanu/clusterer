@@ -93,7 +93,7 @@ func createChanFromMU() {
 		log.Println("Creating Custom Channels from json...")
 		Login(page)
 		time.Sleep(3 * time.Second)
-		a, err := utils.GetJson()
+		a, err := utils.GetJson(createReposJson)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
@@ -220,14 +220,14 @@ func FindParentChannel(page *agouti.Page, url, channelName, MUrepo string) {
 func CreateRepo(page *agouti.Page, label, url string, count int) (err error) {
 	err = page.FindByXPath("//a[@href=\"/rhn/channels/manage/repos/RepoList.do\"]").Click()
 	utils.ErrHandler(err, "Element can't be clicked:")
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = page.FindByXPath("//a[text()=\"Create Repository\"]").Click()
 	utils.ErrHandler(err, "Element can't be clicked:")
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = page.FindByName("label").Fill(label)
 	err = page.FindByName("url").Fill(url)
 	ClickButton(page, "btn-success")
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 	return
 }
 

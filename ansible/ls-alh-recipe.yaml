@@ -1,0 +1,13 @@
+---
+- hosts: workers
+  gather_facts: False
+  remote_user: root
+  become: False
+
+  tasks:
+  - name: ls_alh_cmd
+    raw: ls -alh /root/
+    register: ls_alh_output
+
+  - debug:
+      var: ls_alh_output.stdout_lines

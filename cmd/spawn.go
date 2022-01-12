@@ -80,6 +80,8 @@ func setup() {
 	}
 	Cluster.SeedVol_Leap = "opensuse-seed.qcow2"
 	Cluster.SeedVM_Leap = "opensuse-seed"
+	Cluster.SeedVM_Ubuntu = "ubuntu_21.04-seed"
+	Cluster.SeedVol_Ubuntu = "ubuntu_21.04-seed.qcow2"
 	if distro != "" {
 		Cluster.Workers.Distro = distro
 		Cluster.Masters.Distro = distro
@@ -98,8 +100,15 @@ func Deploy() {
 		Cluster.Node[fmt.Sprintf("%s-%s-%v", Cluster.StackName, "masters", i)] = ""
 	}
 	for index, _ := range Cluster.Node {
-		libvirtd.CloneVol(*Cluster, Cluster.SeedVol_Leap, index)
-		libvirtd.CloneVM(*Cluster, Cluster.SeedVM_Leap, index)
+		switch distro {
+		case "leap":
+			libvirtd.CloneVol(*Cluster, Cluster.SeedVol_Leap, index)
+			libvirtd.CloneVM(*Cluster, Cluster.SeedVM_Leap, index)
+		case "ubuntu":
+			libvirtd.CloneVol(*Cluster, Cluster.SeedVol_Ubuntu, index)
+			libvirtd.CloneVM(*Cluster, Cluster.SeedVM_Ubuntu, index)
+		}
+
 	}
 	if err := Cluster.SaveJSN(RootDir); err != nil {
 		log.Printf("Error while saving the json file: %v", err)

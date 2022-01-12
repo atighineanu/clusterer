@@ -1,0 +1,13 @@
+---
+- hosts: "{{ host_ip }}"
+  gather_facts: False
+  remote_user: root
+  become: False
+
+  tasks: 
+  - name:
+    raw: zypper -n in -t pattern xen_server xen_tools
+    register: zypper_in_output
+
+  - debug:
+      var: zypper_in_output.stdout_lines  

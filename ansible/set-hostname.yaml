@@ -1,0 +1,13 @@
+---
+- hosts: all
+  gather_facts: True
+  remote_user: root
+  become: False
+
+  tasks:
+   - name: set_hostname
+     shell: hostnamectl set-hostname {{ hostname }}; reboot
+     register: echo_output
+
+   - debug: 
+        var: brctl_output.lines

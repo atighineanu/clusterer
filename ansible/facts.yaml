@@ -1,0 +1,10 @@
+---
+- hosts: all
+  gather_facts: True
+  remote_user: root
+  become: False
+
+  tasks:
+   - name: Zypper ref Suse os_family machines
+     shell: zypper ref 
+     when: ansible_facts['os_family'] == "Suse"

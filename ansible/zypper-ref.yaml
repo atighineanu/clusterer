@@ -1,0 +1,13 @@
+---
+- hosts: workers
+  gather_facts: False
+  remote_user: root
+  become: False
+  
+  tasks:
+  - name: run zypper ref
+    raw: zypper ref
+    register: zypper_ref_output
+  
+  - debug: 
+      var: zypper_ref_output.stdout_lines

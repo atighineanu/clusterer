@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-func GetJson() (a map[string]map[string]string, err error) {
+func GetJson(jsonFile string) (a map[string]map[string]string, err error) {
 	a = make(map[string]map[string]string)
-	file, err := os.Open("bv.json")
+	file, err := os.Open(jsonFile)
 	if err != nil {
 		return
 	}

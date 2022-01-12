@@ -1,6 +1,6 @@
 {
  "Deploy": "libvirt",
- "StackName": "Nomad",
+ "StackName": "default",
  "Pool": {
   "Name": "default",
   "Path": "/home/qcows"
@@ -10,22 +10,28 @@
   "IP": ""
  },
  "Node": {
-  "Nomad-masters-0": "192.168.122.143",
-  "Nomad-masters-1": "192.168.122.130",
-  "Nomad-workers-0": "192.168.122.160",
-  "Nomad-workers-1": "192.168.122.119",
-  "Nomad-workers-2": "192.168.122.208"
+  "default-masters-0": "",
+  "default-masters-1": "",
+  "default-masters-2": "",
+  "default-workers-0": ""
  },
+ "SeedVol_Ubuntu": "ubuntu_21.04-seed.qcow2",
+ "SeedVM_Ubuntu": "ubuntu_21.04-seed",
  "SeedVol_Leap": "opensuse-seed.qcow2",
  "SeedVol_SLES15_2": "",
  "SeedVM_Leap": "opensuse-seed",
  "SeedVM_SLES15_2": "",
  "Workers": {
-  "Count": 3,
-  "Distro": ""
+  "Count": 1,
+  "Distro": "leap"
  },
  "Masters": {
-  "Count": 2,
-  "Distro": ""
- }
+  "Count": 3,
+  "Distro": "leap"
+ },
+ "SumaOrgCredentials": {
+  "Username": "",
+  "Password": "61b9a042a2"
+ },
+ "SSHKeyLocation": "/home/user/.ssh/id_rsa"
 }

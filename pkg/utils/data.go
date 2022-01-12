@@ -17,6 +17,8 @@ type Command struct {
 		IP   string
 	}
 	Node               map[string]string
+	SeedVol_Ubuntu     string
+	SeedVM_Ubuntu      string
 	SeedVol_Leap       string
 	SeedVol_SLES15_2   string
 	SeedVM_Leap        string

@@ -1,0 +1,13 @@
+---
+- hosts: masters
+  gather_facts: False
+  remote_user: root
+  become: False
+
+  tasks:
+    - name: zypper in package
+      community.general.zypper:
+        name: apache2
+        state: latest
+
+      community.general.log_plays:

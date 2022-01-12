@@ -1,0 +1,25 @@
+---
+- hosts: all
+  gather_facts: True
+  remote_user: root
+  become: False
+
+  tasks:
+   - name: add_rancher_server
+     shell: echo "192.168.122.1 rancher-server" >> /etc/hosts
+  
+   - name: install brctl
+     shell: zypper -n in bridge-utils
+
+   - name: set_dockerbr_to_eth0
+     shell: brctl addif docker0 eth0; brctl show
+     register: brctl_output
+
+
+   - name: set_hostname
+     shell: hostnamectl set-hostname {{ hostname }}; reboot
+     ignore_unreachable: yes
+     register: echo_output
+
+   - debug: 
+        var: brctl_output.lines
